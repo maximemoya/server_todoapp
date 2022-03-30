@@ -3,6 +3,7 @@
  */
 package gradle_project_start.app
 
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import gradle_project_start.app.formats.JacksonMessage
 import gradle_project_start.app.formats.jacksonMessageLens
 import gradle_project_start.todoapp.ToDoApp
@@ -24,11 +25,21 @@ fun create(myToApp: ToDoApp): HttpHandler {
             Response(OK).body("pong")
         },
 
-        "/getlist" bind GET to {
+        "/getFirstTaskText" bind GET to {
             val todoList = myToApp.getActualToDoList()
+
                 Response(OK).with(
-                    jacksonMessageLens of JacksonMessage("todolist", "$todoList"))
+                    jacksonMessageLens of JacksonMessage("todolist", "${todoList[0]?.name}"))
         },
+
+        "/getToDoListFormatJSON" bind GET to {
+            val todoList = myToApp.getActualToDoList()
+            val jsonObj = jacksonObjectMapper().writeValueAsString(todoList)
+
+            Response(OK).with(
+                jacksonMessageLens of JacksonMessage("todolist", jsonObj))
+        },
+
 
         "/formats/json/jackson" bind GET to {
             Response(OK).with(jacksonMessageLens of JacksonMessage("Barry", "Hello there!"))
@@ -41,9 +52,9 @@ fun create(myToApp: ToDoApp): HttpHandler {
 
 }
 
-val printingApp: HttpHandler = DebuggingFilters.PrintRequest().then(create(ToDoApp()))
-val server = printingApp.asServer(SunHttp(9000)).start()
+//val printingApp: HttpHandler = DebuggingFilters.PrintRequest().then(create(ToDoApp()))
+//val server = printingApp.asServer(SunHttp(9000)).start()
 
 fun main() {
-    val server = ApiServer()
+//    val server = ApiServer()
 }
