@@ -3,12 +3,47 @@
  */
 package gradle_project_start.app
 
+import gradle_project_start.app.formats.JacksonMessage
+import gradle_project_start.app.formats.jacksonMessageLens
 import gradle_project_start.todoapp.ToDoApp
+import org.http4k.core.*
+import org.http4k.core.Method.GET
+import org.http4k.core.Status.Companion.OK
+import org.http4k.filter.DebuggingFilters
+import org.http4k.routing.bind
+import org.http4k.routing.routes
+import org.http4k.server.SunHttp
+import org.http4k.server.asServer
+
+val myToDoApp = ToDoApp()
+
+fun create(myToApp: ToDoApp): HttpHandler {
+
+    return routes(
+        "/ping" bind GET to {
+            Response(OK).body("pong")
+        },
+
+        "/getlist" bind GET to {
+            val todoList = myToApp.getActualToDoList()
+                Response(OK).with(
+                    jacksonMessageLens of JacksonMessage("todolist", "$todoList"))
+        },
+
+        "/formats/json/jackson" bind GET to {
+            Response(OK).with(jacksonMessageLens of JacksonMessage("Barry", "Hello there!"))
+        },
+
+        "/testing/strikt" bind GET to { request ->
+            Response(OK).body("Echo '${request.bodyString()}'")
+        }
+    )
+
+}
+
+val printingApp: HttpHandler = DebuggingFilters.PrintRequest().then(create(ToDoApp()))
+val server = printingApp.asServer(SunHttp(9000)).start()
 
 fun main() {
-    val todoapp = ToDoApp()
-    todoapp.addNewTask(ToDoApp.TaskToDo("do server", false))
-    println(todoapp.getActualToDoList()[0]?.name)
-
     val server = ApiServer()
 }

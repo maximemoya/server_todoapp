@@ -1,3 +1,4 @@
+import gradle_project_start.todoapp.ToDoApp
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import strikt.api.expectThat
