@@ -9,4 +9,6 @@ fun main() {
     val todoapp = ToDoApp()
     todoapp.addNewTask(ToDoApp.TaskToDo("do server", false))
     println(todoapp.getActualToDoList()[0]?.name)
+
+    val server = ApiServer()
 }
