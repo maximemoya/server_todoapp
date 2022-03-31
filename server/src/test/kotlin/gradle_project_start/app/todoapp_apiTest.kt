@@ -7,6 +7,7 @@ import gradle_project_start.todoapp.ToDoApp
 import org.http4k.core.Method.GET
 import org.http4k.core.Request
 import org.http4k.core.Response
+import org.http4k.core.Status.Companion.BAD_REQUEST
 import org.http4k.core.Status.Companion.OK
 import org.http4k.strikt.bodyString
 import org.http4k.strikt.status
@@ -14,21 +15,32 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import strikt.api.expectThat
-import strikt.assertions.*
+import strikt.assertions.isEqualTo
 
 class todoapp_apiTest {
 
-    val toDoApp = ToDoApp()
+    private var toDoApp = ToDoApp()
     var server = create(toDoApp)
 
-//    @BeforeEach
-//    fun setUp() {
-//        server = create(toDoApp)
-//    }
+    @BeforeEach
+    fun setUp() {
+        toDoApp = ToDoApp()
+        server = create(toDoApp)
+    }
 
     @Test
     fun `Ping test`() {
         assertEquals(server(Request(GET, "/ping")), Response(OK).body("pong"))
+    }
+
+    @Test
+    fun `Check Strikt matcher for http4k work as expected`() {
+        val request = Request(GET, "/testing/strikt?a=b").body("http4k is cool").header("my header", "a value")
+        val response = server(request)
+
+        // response assertions
+        expectThat(response).status.isEqualTo(OK)
+        expectThat(response).bodyString.isEqualTo("Echo 'http4k is cool'")
     }
 
     @Test
@@ -39,10 +51,12 @@ class todoapp_apiTest {
 
         val request = Request(GET, "/getFirstTaskText")
         val response = server(request)
+        val mapper = jacksonObjectMapper()
+        val jacksonObj: JacksonMessage = mapper.readValue<JacksonMessage>(response.bodyString())
 
         // response assertions
         expectThat(response).status.isEqualTo(OK)
-        expectThat(response).bodyString.isEqualTo("{\"subject\":\"todolist\",\"message\":\"task2\"}")
+        expectThat(jacksonObj.message).isEqualTo("task2")
 
     }
 
@@ -55,8 +69,8 @@ class todoapp_apiTest {
         val request = Request(GET, "/getToDoListFormatJSON")
         val response = server(request)
         val mapper = jacksonObjectMapper()
-        val jacksonobj : JacksonMessage = mapper.readValue<JacksonMessage>(response.bodyString())
-        val returnedList: Array<ToDoApp.TaskToDo> = mapper.readValue<Array<ToDoApp.TaskToDo>>(jacksonobj.message)
+        val jacksonObj: JacksonMessage = mapper.readValue<JacksonMessage>(response.bodyString())
+        val returnedList: Array<ToDoApp.TaskToDo> = mapper.readValue<Array<ToDoApp.TaskToDo>>(jacksonObj.message)
 
         // response assertions
         expectThat(response).status.isEqualTo(OK)
@@ -71,13 +85,34 @@ class todoapp_apiTest {
     }
 
     @Test
-    fun `Check Strikt matcher for http4k work as expected`() {
-        val request = Request(GET, "/testing/strikt?a=b").body("http4k is cool").header("my header", "a value")
+    fun `route addTask should add task print in url`() {
+        toDoApp.addNewTask(ToDoApp.TaskToDo("task3", false))
+        toDoApp.addNewTask(ToDoApp.TaskToDo("task2", false))
+        toDoApp.addNewTask(ToDoApp.TaskToDo("task1", true))
+
+        val request = Request(GET, "/addTask?text=task0")
         val response = server(request)
 
         // response assertions
         expectThat(response).status.isEqualTo(OK)
-        expectThat(response).bodyString.isEqualTo("Echo 'http4k is cool'")
+        expectThat(toDoApp.getActualToDoList().size).isEqualTo(4)
+        expectThat(toDoApp.getActualToDoList()[0]?.name).isEqualTo("task0")
+        expectThat(toDoApp.getActualToDoList()[1]?.isCheck).isEqualTo(false)
+
+    }
+
+    @Test
+    fun `route addTask should return status_BAD_REQUEST if no text input`() {
+        toDoApp.addNewTask(ToDoApp.TaskToDo("task3", false))
+        toDoApp.addNewTask(ToDoApp.TaskToDo("task2", false))
+        toDoApp.addNewTask(ToDoApp.TaskToDo("task1", true))
+
+        val request = Request(GET, "/addTask")
+        val response = server(request)
+
+        // response assertions
+        expectThat(response).status.isEqualTo(BAD_REQUEST)
+
     }
 
 }
