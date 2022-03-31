@@ -63,20 +63,27 @@ fun create(myToApp: ToDoApp): HttpHandler {
         },
 
         "/removeTask" bind GET to { request: Request ->
-            val id : Int = request.query("id")?.toInt() ?: error("id is required as integer")
+            val id: Int = request.query("id")?.toInt() ?: error("id is required as integer")
             val taskNameToRemove = myToApp.getActualToDoList()[id]?.name
             myToApp.removeTaskById(id)
             Response(OK).body("task '$taskNameToRemove' removed")
         },
 
         "/checkTask" bind GET to { request: Request ->
-            val id : Int = request.query("id")?.toInt() ?: error("id is required as integer")
+            val id: Int = request.query("id")?.toInt() ?: error("id is required as integer")
             val task = myToApp.getActualToDoList()[id]
             myToApp.checkATaskById(id)
             Response(OK).body("task '${task?.name}' isCheck : ${task?.isCheck}")
         },
 
-    ).withFilter(filters)
+        "/unCheckTask" bind GET to { request: Request ->
+            val id: Int = request.query("id")?.toInt() ?: error("id is required as integer")
+            val task = myToApp.getActualToDoList()[id]
+            myToApp.unCheckATaskById(id)
+            Response(OK).body("task '${task?.name}' isCheck : ${task?.isCheck}")
+        },
+
+        ).withFilter(filters)
 
     return httpHandler
 

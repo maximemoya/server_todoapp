@@ -203,6 +203,58 @@ class todoapp_apiTest {
         expectThat(response).status.isEqualTo(BAD_REQUEST)
     }
 
+    @Test
+    fun `route unCheckTask should remove task in taskList`() {
+        toDoApp.addNewTask(ToDoApp.TaskToDo("task3", true))
+        toDoApp.addNewTask(ToDoApp.TaskToDo("task2", false))
+        toDoApp.addNewTask(ToDoApp.TaskToDo("task1", true))
+
+        val request = Request(GET, "/unCheckTask?id=1")
+        val response = server(request)
+
+        // response assertions
+        expectThat(response).status.isEqualTo(OK)
+
+        val request2 = Request(GET, "/getToDoListFormatJSON")
+        val response2 = server(request2)
+        val mapper = jacksonObjectMapper()
+        val jacksonObj: JacksonMessage = mapper.readValue<JacksonMessage>(response2.bodyString())
+        val returnedList: Array<ToDoApp.TaskToDo> = mapper.readValue<Array<ToDoApp.TaskToDo>>(jacksonObj.message)
+
+        expectThat(returnedList.size).isEqualTo(3)
+        expectThat(returnedList[0].name).isEqualTo("task1")
+        expectThat(returnedList[0].isCheck).isEqualTo(false)
+        expectThat(returnedList[1].name).isEqualTo("task2")
+        expectThat(returnedList[1].isCheck).isEqualTo(false)
+        expectThat(returnedList[2].name).isEqualTo("task3")
+        expectThat(returnedList[2].isCheck).isEqualTo(true)
+
+    }
+
+    @Test
+    fun `route unCheckTask should return status_BAD_REQUEST if wrong or none input`() {
+        toDoApp.addNewTask(ToDoApp.TaskToDo("task3", false))
+        toDoApp.addNewTask(ToDoApp.TaskToDo("task2", false))
+        toDoApp.addNewTask(ToDoApp.TaskToDo("task1", true))
+
+        var request = Request(GET, "/unCheckTask?id=test")
+        var response = server(request)
+
+        // response assertions
+        expectThat(response).status.isEqualTo(BAD_REQUEST)
+
+        request = Request(GET, "/unCheckTask?id=3.45")
+        response = server(request)
+
+        // response assertions
+        expectThat(response).status.isEqualTo(BAD_REQUEST)
+
+        request = Request(GET, "/unCheckTask")
+        response = server(request)
+
+        // response assertions
+        expectThat(response).status.isEqualTo(BAD_REQUEST)
+    }
 
 
 }
