@@ -4,6 +4,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import gradle_project_start.app.formats.JacksonMessage
 import gradle_project_start.todoapp.ToDoApp
+import org.http4k.core.HttpHandler
 import org.http4k.core.Method.GET
 import org.http4k.core.Request
 import org.http4k.core.Response
@@ -19,8 +20,8 @@ import strikt.assertions.isEqualTo
 
 class todoapp_apiTest {
 
-    private var toDoApp = ToDoApp()
-    var server = create(toDoApp)
+    private lateinit var toDoApp : ToDoApp
+    private lateinit var server : HttpHandler
 
     @BeforeEach
     fun setUp() {

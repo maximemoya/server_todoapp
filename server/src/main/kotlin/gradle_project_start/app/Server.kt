@@ -18,8 +18,25 @@ import org.http4k.routing.routes
 import org.http4k.server.SunHttp
 import org.http4k.server.asServer
 
-val myToDoApp = ToDoApp()
-
+/**
+ * REQUEST AVAILABLE :
+ *
+ * /ping
+ *
+ * /formats/json/jackson
+ *
+ * /testing/strikt
+ *
+ * /getToDoListFormatJSON
+ *
+ * /addTask?text='String'
+ *
+ * /removeTask?id='Int'
+ *
+ * /checkTask?id='Int'
+ *
+ * /unCheckTask?id='Int'
+ */
 fun create(myToApp: ToDoApp): HttpHandler {
 
     val filter = Filter { handler ->
