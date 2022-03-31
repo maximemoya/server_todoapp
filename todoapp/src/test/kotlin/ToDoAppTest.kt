@@ -130,11 +130,18 @@ class ToDoAppTest {
     // The method checkATaskByIndex set the Task attribute ischeck to true
     @Test
     fun checkATaskByIndex() {
-        myToDoApp.addNewTask(ToDoApp.TaskToDo("name0", false))
+        myToDoApp.addNewTask(ToDoApp.TaskToDo("name3", false))
+        myToDoApp.addNewTask(ToDoApp.TaskToDo("name2", true))
+        myToDoApp.addNewTask(ToDoApp.TaskToDo("name1", false))
         // Test method :
-        myToDoApp.checkATaskById(0)
+        myToDoApp.checkATaskById(1)
         // Execution :
-        expectThat(myToDoApp.getActualToDoList()[0]?.isCheck).isEqualTo(true)
+        expectThat(myToDoApp.getActualToDoList()[0]?.name).isEqualTo("name1")
+        expectThat(myToDoApp.getActualToDoList()[0]?.isCheck).isEqualTo(false)
+        expectThat(myToDoApp.getActualToDoList()[1]?.name).isEqualTo("name2")
+        expectThat(myToDoApp.getActualToDoList()[1]?.isCheck).isEqualTo(true)
+        expectThat(myToDoApp.getActualToDoList()[2]?.name).isEqualTo("name3")
+        expectThat(myToDoApp.getActualToDoList()[2]?.isCheck).isEqualTo(true)
     }
 
     // The method checkATaskByName set the Task attribute ischeck to true
@@ -151,12 +158,18 @@ class ToDoAppTest {
     @Test
     fun unCheckATaskByIndex() {
         // Context :
-        val myToDoApp = ToDoApp()
-        myToDoApp.addNewTask(ToDoApp.TaskToDo("name0", true))
+        myToDoApp.addNewTask(ToDoApp.TaskToDo("name3", true))
+        myToDoApp.addNewTask(ToDoApp.TaskToDo("name2", false))
+        myToDoApp.addNewTask(ToDoApp.TaskToDo("name1", true))
         // Test method :
-        myToDoApp.unCheckATaskById(0)
+        myToDoApp.unCheckATaskById(1)
         // Execution :
+        expectThat(myToDoApp.getActualToDoList()[0]?.name).isEqualTo("name1")
         expectThat(myToDoApp.getActualToDoList()[0]?.isCheck).isEqualTo(false)
+        expectThat(myToDoApp.getActualToDoList()[1]?.name).isEqualTo("name2")
+        expectThat(myToDoApp.getActualToDoList()[1]?.isCheck).isEqualTo(false)
+        expectThat(myToDoApp.getActualToDoList()[2]?.name).isEqualTo("name3")
+        expectThat(myToDoApp.getActualToDoList()[2]?.isCheck).isEqualTo(true)
     }
 
     // The method unCheckATaskByName set the Task attribute ischeck to false

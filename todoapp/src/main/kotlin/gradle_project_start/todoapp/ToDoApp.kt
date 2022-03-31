@@ -61,24 +61,27 @@ class ToDoApp {
     fun checkATaskById(idTask: Int) {
         if (idTask < toDoList.size) {
             toDoList[idTask]?.isCheck = true
-            toDoList[idTask]?.isCheck
+            sort()
         }
     }
 
+    @Deprecated("better to use by id")
     fun checkATaskByName(taskName: String) {
         toDoList.find { it?.name == taskName }?.isCheck = true
+        sort()
     }
 
     fun unCheckATaskById(idTask: Int) {
         if (idTask < toDoList.size) {
             toDoList[idTask]?.isCheck = false
-        } else {
-            true
+            sort()
         }
     }
 
+    @Deprecated("better to use by id")
     fun unCheckATaskByName(taskName: String) {
         toDoList.find { it?.name == taskName }?.isCheck = false
+        sort()
     }
 
     // ----------------
