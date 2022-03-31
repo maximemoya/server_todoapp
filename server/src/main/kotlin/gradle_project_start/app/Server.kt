@@ -27,7 +27,7 @@ fun create(myToApp: ToDoApp): HttpHandler {
             try {
                 handler(request)
             } catch (e: Exception) {
-                Response(BAD_REQUEST)
+                Response(BAD_REQUEST).body("BAD_REQUEST")
             }
         }
         wrapperHandler
@@ -39,12 +39,12 @@ fun create(myToApp: ToDoApp): HttpHandler {
             Response(OK).body("pong")
         },
 
-        "/getFirstTaskText" bind GET to {
-            val toDoList = myToApp.getActualToDoList()
+        "/formats/json/jackson" bind GET to {
+            Response(OK).with(jacksonMessageLens of JacksonMessage("Barry", "Hello there!"))
+        },
 
-            Response(OK).with(
-                jacksonMessageLens of JacksonMessage("firstTask", "${toDoList[0]?.name}")
-            )
+        "/testing/strikt" bind GET to { request ->
+            Response(OK).body("Echo '${request.bodyString()}'")
         },
 
         "/getToDoListFormatJSON" bind GET to {
@@ -59,16 +59,16 @@ fun create(myToApp: ToDoApp): HttpHandler {
         "/addTask" bind GET to { request: Request ->
             val name: String = request.query("text") ?: error("test is required")
             myToApp.addNewTask(ToDoApp.TaskToDo(name, false))
-            Response(OK)
+            Response(OK).body("add task : $name")
         },
 
-        "/formats/json/jackson" bind GET to {
-            Response(OK).with(jacksonMessageLens of JacksonMessage("Barry", "Hello there!"))
-        },
-
-        "/testing/strikt" bind GET to { request ->
-            Response(OK).body("Echo '${request.bodyString()}'")
+        "/removeTask" bind GET to { request: Request ->
+            val id : Int = request.query("id")?.toInt() ?: error("id is required as integer")
+            val taskNameToRemove = myToApp.getActualToDoList()[id]?.name
+            myToApp.removeTaskById(id)
+            Response(OK).body("task '$taskNameToRemove' removed")
         }
+
     ).withFilter(filters)
 
     return httpHandler

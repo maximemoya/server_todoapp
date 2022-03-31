@@ -44,23 +44,6 @@ class todoapp_apiTest {
     }
 
     @Test
-    fun `route getFirstTaskText should return the first task name of the todolist`() {
-        toDoApp.addNewTask(ToDoApp.TaskToDo("task3", false))
-        toDoApp.addNewTask(ToDoApp.TaskToDo("task2", false))
-        toDoApp.addNewTask(ToDoApp.TaskToDo("task1", true))
-
-        val request = Request(GET, "/getFirstTaskText")
-        val response = server(request)
-        val mapper = jacksonObjectMapper()
-        val jacksonObj: JacksonMessage = mapper.readValue<JacksonMessage>(response.bodyString())
-
-        // response assertions
-        expectThat(response).status.isEqualTo(OK)
-        expectThat(jacksonObj.message).isEqualTo("task2")
-
-    }
-
-    @Test
     fun `route getToDoListFormatJSON should return the todolist in JSON Format`() {
         toDoApp.addNewTask(ToDoApp.TaskToDo("task3", false))
         toDoApp.addNewTask(ToDoApp.TaskToDo("task2", false))
@@ -84,6 +67,7 @@ class todoapp_apiTest {
 
     }
 
+    // Format /addTask?text='a_new_task'
     @Test
     fun `route addTask should add task print in url`() {
         toDoApp.addNewTask(ToDoApp.TaskToDo("task3", false))
@@ -97,7 +81,7 @@ class todoapp_apiTest {
         expectThat(response).status.isEqualTo(OK)
         expectThat(toDoApp.getActualToDoList().size).isEqualTo(4)
         expectThat(toDoApp.getActualToDoList()[0]?.name).isEqualTo("task0")
-        expectThat(toDoApp.getActualToDoList()[1]?.isCheck).isEqualTo(false)
+        expectThat(toDoApp.getActualToDoList()[0]?.isCheck).isEqualTo(false)
 
     }
 
@@ -113,6 +97,57 @@ class todoapp_apiTest {
         // response assertions
         expectThat(response).status.isEqualTo(BAD_REQUEST)
 
+    }
+
+    @Test
+    fun `route removeTask should remove task in taskList`() {
+        toDoApp.addNewTask(ToDoApp.TaskToDo("task3", false))
+        toDoApp.addNewTask(ToDoApp.TaskToDo("task2", false))
+        toDoApp.addNewTask(ToDoApp.TaskToDo("task1", true))
+
+        val request = Request(GET, "/removeTask?id=1")
+        val response = server(request)
+
+        // response assertions
+        expectThat(response).status.isEqualTo(OK)
+
+        val request2 = Request(GET, "/getToDoListFormatJSON")
+        val response2 = server(request2)
+        val mapper = jacksonObjectMapper()
+        val jacksonObj: JacksonMessage = mapper.readValue<JacksonMessage>(response2.bodyString())
+        val returnedList: Array<ToDoApp.TaskToDo> = mapper.readValue<Array<ToDoApp.TaskToDo>>(jacksonObj.message)
+
+        expectThat(returnedList.size).isEqualTo(2)
+        expectThat(returnedList[0].name).isEqualTo("task2")
+        expectThat(returnedList[0].isCheck).isEqualTo(false)
+        expectThat(returnedList[1].name).isEqualTo("task1")
+        expectThat(returnedList[1].isCheck).isEqualTo(true)
+
+    }
+
+    @Test
+    fun `route removeTask should return status_BAD_REQUEST if wrong or none input`() {
+        toDoApp.addNewTask(ToDoApp.TaskToDo("task3", false))
+        toDoApp.addNewTask(ToDoApp.TaskToDo("task2", false))
+        toDoApp.addNewTask(ToDoApp.TaskToDo("task1", true))
+
+        var request = Request(GET, "/removeTask?id=test")
+        var response = server(request)
+
+        // response assertions
+        expectThat(response).status.isEqualTo(BAD_REQUEST)
+
+        request = Request(GET, "/removeTask?id=3.45")
+        response = server(request)
+
+        // response assertions
+        expectThat(response).status.isEqualTo(BAD_REQUEST)
+
+        request = Request(GET, "/removeTask")
+        response = server(request)
+
+        // response assertions
+        expectThat(response).status.isEqualTo(BAD_REQUEST)
     }
 
 }
